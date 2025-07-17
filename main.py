@@ -7,9 +7,8 @@ app = FastAPI()
 def root():
     return {"This is the root endpoint"}
 
+
 # addition of a + b
-
-
 @app.get("/add/{a}/{b}")
 def add_numbers(a, b):
     try:

@@ -23,7 +23,7 @@ FastApi_APP/
 
 - Python 3.10+
 - [Poetry](https://python-poetry.org/docs/#installation)
-- Git (optional, for cloning)
+- Git
 
 ---
 

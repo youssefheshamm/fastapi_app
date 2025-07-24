@@ -1,9 +1,6 @@
-# 🚀 FastAPI Utility App
+# FastAPI Mini Project 🚀
 
-A simple FastAPI project that provides two main functionalities:
-
-- 🔢 **Addition**: Add two numbers
-- 🔁 **Palindrome Checker**: Check if a word is a palindrome
+This is a simple FastAPI-based backend project that includes multiple endpoints. The application supports arithmetic operations, palindrome checking, and task management via in-memory storage.
 
 ---
 
@@ -13,104 +10,132 @@ FastApi_APP/
 ├── main.py
 ├──pyproject.toml # Poetry configuration
 ├── poetry.lock # Dependency lock file
-├── README.md # Project info and usage
+├── README.md # Project info and usage (You're looking at it!📘)
 └── LICENSE
 ```
 
 ---
 
-## ⚙️ Requirements
+## 📦 Requirements
 
 - Python 3.10+
 - [Poetry](https://python-poetry.org/docs/#installation)
-- Git
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Uvicorn](https://www.uvicorn.org/) (for running the app)
+- [Pydantic](https://docs.pydantic.dev/)
 
 ---
 
 ## 📦 Installation
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/youssefheshamm/FastApi_APP.git
-   ```
-1. **Move into the project folder:**
-   ```bash
-   cd FastApi_APP
-   ```
-3. **Install dependencies using Poetry:**
-   ```bash
-    poetry install
-4. **Run the server:**
-   ```bash
-    poetry run uvicorn main:app --reload
-   ```
-   OR
-   ```bash
-    poetry run uvicorn main:app --reload --port 8000
-   ```
-   
-## Once the server is running, you'll see something like:
+Install all dependencies using:
+
 ```bash
-  Uvicorn running on http://127.0.0.1:8000
+poetry install
 ```
-Open that link (here it's ```http://127.0.0.1:8000```) in your browser or by using a tool like Postman/Insomnia to access the root endpoint (/), which welcomes you to the API.
 
-### You can also test the endpoints:
+Or manually with:
 
-➕ Add Endpoint
-URL:  `http://127.0.0.1:8000/add/4/5`
+```bash
+pip install fastapi uvicorn pydantic
+```
 
-Returns the sum of `a = 4` and `b = 5`
-
-Result: `["a = 4, b = 5, a + b = 9 "]`
-
-🔁 Palindrome Checker
-URL:  `http://127.0.0.1:8000/pal/radar`
-
-Returns if the word is `a palindrome` or `not a palindrome`
-
-Result: `["The word is a palindrome"]`
-
-Try different words like:
-
-`/pal/hello` → `["The word is not a palindrome"]`
-
-`/pal/9` → `["this is not a word"]`
 
 ---
 
-## 🔍 API Endpoints
+## 🚀 How to Run
 
-### ➕ `GET /add/{a}/{b}`
-
-Adds two numbers and returns the result.
+Start the server with:
 
 ```bash
-/add/4/5
-→ { "a = 4, b = 5, a + b = 9" }
-
-# If inputs are not numeric
-/add/a/b
-→ { "ERROR: both inputs must be numeric values" }
-```
-### 🔁 `GET /pal/{word}`
-
-Checks if a word is a palindrome (case-insensitive). Ignores numbers
-```bash
-/pal/radar
-→ { "The word is a palindrome" }
-
-/pal/hello
-→ { "The word is not a palindrome" }
-
-# If input is not a word
-/pal/9
-→ { "this is not a word" }
-
-# If input is only one letter
-/pal/i
-→ { "The word is too short" }
+poetry run uvicorn main:app --reload
 ```
 
+Then open your browser at:
 
+```
+http://127.0.0.1:8000/docs
+```
 
+> This will launch the Swagger UI — an interactive documentation for testing the API endpoints.
+
+---
+
+## 🧪 Endpoints
+
+### 🔹 Root Endpoint
+
+- **GET** `/`  
+Returns a simple welcome message.
+
+---
+
+### 🔹 Add Two Numbers
+
+- **GET** `/add/{a}/{b}`  
+Returns the sum of two numeric values.
+
+**Example:**  
+`/add/3/5` → `a = 3, b = 5, a + b = 8`
+
+---
+
+### 🔹 Palindrome Checker
+
+- **GET** `/pal/{word}`  
+Checks whether a given word is a palindrome.
+
+**Example:**  
+`/pal/radar` → `"The word is a palindrome"`  
+`/pal/hello` → `"The word is not a palindrome"`
+
+---
+
+### 🔹 Create a Task
+
+- **POST** `/task/`  
+Creates a task with a `title` and optional `description`.
+
+**JSON Body Example:**
+```json
+{
+  "title": "Buy groceries",
+  "description": "Milk, Bread, Eggs"
+}
+```
+
+**Response:**
+```
+Task received and stored: ...
+```
+
+---
+
+### 🔹 Get a Task by Title
+
+- **GET** `/task/{title}`  
+Searches for a task by its title (case-insensitive).
+
+**Example:**  
+`/task/Buy groceries` → returns the stored task
+
+If not found, returns:
+```
+404: Task not found
+```
+
+---
+
+## ⚠️ Notes
+
+- Tasks are stored **in-memory** — meaning they will be lost when the server restarts.
+- Error handling is included for invalid numeric input and missing tasks.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.  
+See the [LICENSE](LICENSE) file for details.
+
+---

@@ -7,11 +7,22 @@ This is a simple FastAPI-based backend project that includes multiple endpoints.
 ## 📂 Project Structure
 FastApi_APP/
 ```
-├── main.py
-├──pyproject.toml # Poetry configuration
-├── poetry.lock # Dependency lock file
-├── README.md # Project info and usage (You're looking at it!📘)
-└── LICENSE
+├── app/                            # Application package
+│   ├── __init__.py
+│   ├── main.py                     # FastAPI app instance and app startup
+│   ├── models/                     # Pydantic models
+│   │   ├── __init__.py
+│   │   └── task.py
+│   └── routers/                    # API endpoint routers
+│       ├── __init__.py
+│       ├── tasks.py
+│       └── util.py
+├── pyproject.toml                  # Poetry configuration
+├── poetry.lock                     # Dependency lock file
+├── README.md                       # Project info and usage (You're looking at it! 📘)
+├── LICENSE                         # Project license
+└── .gitignore                      # Git ignored files and folders
+
 ```
 
 ---

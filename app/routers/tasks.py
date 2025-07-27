@@ -1,12 +1,13 @@
-from fastapi import APIRouter, HTTPException
-from app.models.task import task
+from fastapi import APIRouter, HTTPException, Depends
+from app.models.task import Task
+from app.auth.auth import verify_api_key
 
 router = APIRouter()
 
 tasks = []
 
 
-@router.post("/task/")
+@router.post("/task/", dependencies=[Depends(verify_api_key)])
 def task_list(task: Task):
     for x in tasks:
         if x.title.lower() == task.title.lower():

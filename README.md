@@ -17,7 +17,7 @@ FastApi_APP/
 │   │   ├── __init__.py
 │   │   ├── tasks.py
 │   │   └── util.py
-│   └── auth/                      # API authentication
+│   └── auth/                       # API authentication
 │       ├── __init__.py
 │       └── auth.py
 ├── pyproject.toml                  # Poetry configuration

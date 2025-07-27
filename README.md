@@ -14,9 +14,12 @@ FastApi_APP/
 │   │   ├── __init__.py
 │   │   └── task.py
 │   └── routers/                    # API endpoint routers
+│   │   ├── __init__.py
+│   │   ├── tasks.py
+│   │   └── util.py
+│   └── auth/                    # API authentication
 │       ├── __init__.py
-│       ├── tasks.py
-│       └── util.py
+│       └── auth.py
 ├── pyproject.toml                  # Poetry configuration
 ├── poetry.lock                     # Dependency lock file
 ├── README.md                       # Project info and usage (You're looking at it! 📘)

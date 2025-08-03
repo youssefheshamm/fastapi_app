@@ -10,6 +10,9 @@ FastApi_APP/
 ├── app/                            # Application package
 │   ├── __init__.py
 │   ├── main.py                     # FastAPI app instance and app startup
+│   ├── database.py                 # database configuration
+│   ├── create_tables.py            # building database
+│   ├── init_db.py                  # initialize the database
 │   ├── models/                     # Pydantic models
 │   │   ├── __init__.py
 │   │   └── task.py
@@ -24,7 +27,9 @@ FastApi_APP/
 ├── poetry.lock                     # Dependency lock file
 ├── README.md                       # Project info and usage (You're looking at it! 📘)
 ├── LICENSE                         # Project license
-└── .gitignore                      # Git ignored files and folders
+├── .gitignore                      # Git ignored files and folders
+├── .env                            # env variables for authentication
+└── tasks.db                        # Database file for tasks
 
 ```
 

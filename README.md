@@ -110,44 +110,165 @@ Checks whether a given word is a palindrome.
 
 ---
 
-### 🔹 Create a Task
+### 🔹 POST `/tasks/` — Create a Task
 
-- **POST** `/task/`  
-Creates a task with a `title` and optional `description`.
+**Requires Authentication**
 
-**JSON Body Example:**
+**Request Body:**
+
 ```json
 {
   "title": "Buy groceries",
-  "description": "Milk, Bread, Eggs"
+  "description": "Milk, eggs, and bread"
 }
 ```
 
 **Response:**
-```
-Task received and stored: ...
+
+```json
+{
+  "message": "Task stored",
+  "task": {
+    "id": 1,
+    "title": "Buy groceries",
+    "description": "Milk, eggs, and bread"
+  }
+}
 ```
 
 ---
 
-### 🔹 Get a Task by Title
+### 🔹 GET `/tasks/` — Get All Tasks
 
-- **GET** `/task/{title}`  
-Searches for a task by its title (case-insensitive).
+**Response:**
 
-**Example:**  
-`/task/Buy groceries` → returns the stored task
-
-If not found, returns:
+```json
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Buy groceries",
+      "description": "Milk, eggs, and bread"
+    },
+    {
+      "id": 2,
+      "title": "Clean room",
+      "description": "Start with the desk"
+    }
+  ]
+}
 ```
-404: Task not found
+
+---
+
+### 🔹 GET `/tasks/{task_id}` — Get Task by ID
+
+**Example:** `GET /tasks/1`
+
+**Response:**
+
+```json
+{
+  "task": {
+    "id": 1,
+    "title": "Buy groceries",
+    "description": "Milk, eggs, and bread"
+  }
+}
 ```
+
+---
+
+### 🔹 PUT `/tasks/{task_id}` — Replace a Task
+
+**Requires Authentication**
+
+**Request Body (full update required):**
+
+```json
+{
+  "title": "Buy tools",
+  "description": "Hammer and nails"
+}
+```
+
+**Response:**
+
+```json
+{
+  "message": "Task updated",
+  "task": {
+    "id": 1,
+    "title": "Buy tools",
+    "description": "Hammer and nails"
+  }
+}
+```
+
+---
+
+### 🔹 PATCH `/tasks/{task_id}` — Partially Update a Task
+
+**Requires Authentication**
+
+**Update just the title or description (or both).**
+
+**Example 1: Update only description**
+
+```json
+{
+  "description": "Updated details"
+}
+```
+
+**Example 2: Update both title and description**
+
+```json
+{
+  "title": "Updated Title",
+  "description": "Updated Description"
+}
+```
+
+**Response:**
+
+```json
+{
+  "message": "Task updated",
+  "task": {
+    "id": 1,
+    "title": "Updated Title",
+    "description": "Updated Description"
+  }
+}
+```
+
+⚠️ Title cannot be empty if provided, and must be unique.
+
+---
+
+### 🔹 DELETE `/tasks/{task_id}` — Delete a Task
+
+**Requires Authentication**
+
+**Example:** `DELETE /tasks/1`
+
+**Response:**
+
+```json
+{
+  "message": "Task deleted"
+}
+```
+
+---
+
+✅ All routes that modify data (POST, PUT, PATCH, DELETE) require Basic Authentication using a username and password.
 
 ---
 
 ## ⚠️ Notes
 
-- Tasks are stored **in-memory** — meaning they will be lost when the server restarts.
 - Error handling is included for invalid numeric input and missing tasks.
 
 ---

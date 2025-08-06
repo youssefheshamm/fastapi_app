@@ -1,6 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from sqlalchemy import Column, Integer, String
 from app.database import Base
+from typing import Optional
 
 
 class Task(Base):
@@ -14,3 +15,14 @@ class Task(Base):
 class TaskCreate(BaseModel):
     title: str
     description: str
+
+
+class TaskUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+
+    @validator("title")
+    def title_not_empty(cls, value):
+        if value is not None and not value.strip():
+            raise ValueError("Title cannot be empty")
+        return value

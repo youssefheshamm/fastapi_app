@@ -101,6 +101,15 @@ docker run -d -p 8000:8000 `
 - Replace `my-container` with your preferred container name  
 - Replace `my-image` with your Docker image name  
 
+Or simply use:
+```powershell
+docker run -d -p 8000:8000 `
+  --name my-container `
+  -v "C:\path\to\tasks.db:/app/tasks.db" `
+  my-image
+```
+As the .env is already included.
+
 Then open your browser at:
 
 ```

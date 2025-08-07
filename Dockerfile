@@ -26,7 +26,7 @@ RUN poetry config virtualenvs.create false \
 # Copy the full project including the database
 COPY . .
 
-# ⬇️ This line ensures your existing tasks.db is included
+# This line ensures your existing tasks.db is included
 COPY tasks.db /app/tasks.db
 
 # Expose the port FastAPI will run on

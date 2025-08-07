@@ -29,6 +29,9 @@ FastApi_APP/
 ├── LICENSE                         # Project license
 ├── .gitignore                      # Git ignored files and folders
 ├── .env                            # env variables for authentication
+├── Dockerfile                      # Docker file to build the image
+├── .dockerignore                   # Docker ignored files and folder
+├── tasks.db;C/                     # Empty tasks.db directory created by Docker
 └── tasks.db                        # Database file for tasks
 
 ```
@@ -41,11 +44,11 @@ FastApi_APP/
 - [Poetry](https://python-poetry.org/docs/#installation)
 - [FastAPI](https://fastapi.tiangolo.com/)
 - [Uvicorn](https://www.uvicorn.org/) (for running the app)
-- [Pydantic](https://docs.pydantic.dev/)
+- [Docker](https://www.docker.com/) (for running using docker)
 
 ---
 
-## 📦 Installation
+## 📦 Installation (using poetry)
 
 Install all dependencies using:
 
@@ -64,10 +67,12 @@ pip install fastapi uvicorn pydantic
 
 ## 🚀 How to Run
 
+### Using Poetry (local development)
+
 Start the server with:
 
 ```bash
-poetry run uvicorn main:app --reload
+poetry run uvicorn app.main:app --reload
 ```
 
 Then open your browser at:
@@ -78,6 +83,31 @@ http://127.0.0.1:8000/docs
 
 > This will launch the Swagger UI — an interactive documentation for testing the API endpoints.
 
+---
+
+### Using Docker
+
+To run the app inside a Docker container with your local database and environment variables mounted, use this command in PowerShell:
+
+```powershell
+docker run -d -p 8000:8000 `
+  --name my-container `
+  -v "C:\path\to\tasks.db:/app/tasks.db" `
+  -v "C:\path\to\.env:/app/.env" `
+  my-image
+```
+
+- Replace `"C:\path\to\tasks.db"` and `"C:\path\to\.env"` with the actual paths on your machine  
+- Replace `my-container` with your preferred container name  
+- Replace `my-image` with your Docker image name  
+
+Then open your browser at:
+
+```
+http://localhost:8000/docs
+```
+
+> This also launches the Swagger UI for API testing inside the container.
 ---
 
 ## 🧪 Endpoints

@@ -50,7 +50,10 @@ jobs:
 
       - name: Save release version and image name
         run: |
-          VERSION=$(semantic-release version)
+          VERSION=$(semantic-release version | tr -d '[:space:]')
+          echo "hello"
+          echo $VERSION
+          echo "end"
           IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY,,}"
           echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV

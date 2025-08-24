@@ -1,5 +1,5 @@
 name: Release & Build Docker Image to GHCR
-
+# using semantic release
 on:
   push:
     branches: ["main"]

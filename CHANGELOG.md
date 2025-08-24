@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.1.0 (2025-08-24)
+
+### Bug Fixes
+
+- Remove hard-coded token and update workflow for semantic release
+  ([`fa5a463`](https://github.com/youssefheshamm/fastapi_app/commit/fa5a463772838839d7e7be3eabd720706cf7a5eb))
+
+### Features
+
+- Added a workflow to test token
+  ([`c8e8d66`](https://github.com/youssefheshamm/fastapi_app/commit/c8e8d663ef110cbd504d7481fc73183f9412c108))
+
+
 ## v1.0.9 (2025-08-24)
 
 ### Bug Fixes

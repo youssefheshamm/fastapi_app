@@ -41,9 +41,10 @@ jobs:
           else
             echo "Initial tag exists, skipping"
           fi
-          
+
       - name: Debug Token
-        run: 'echo "Token length: ${#GITHUB_TOKEN}"'
+        run: |
+          echo $GITHUB_TOKEN
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

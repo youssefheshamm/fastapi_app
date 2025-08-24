@@ -13,6 +13,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
+  GITHUB_TOKEN: ${{ secrets.TOKEN }}  # set the repo secret as TOKEN
 
 jobs:
   release-and-docker:
@@ -44,13 +45,14 @@ jobs:
 
       - name: Semantic Release
         id: semantic_release
-        run: |
-          export GITHUB_TOKEN="${{ secrets.TOKEN }}"
-          semantic-release publish
+        env:
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}   # pass env here
+        run: semantic-release publish
 
       - name: Save release version and image name
+        env:
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
         run: |
-          export GITHUB_TOKEN="${{ secrets.TOKEN }}"
           VERSION=$(semantic-release version | tr -d '[:space:]')
           IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY,,}"
           echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
@@ -64,7 +66,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.TOKEN }}
+          password: ${{ env.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6

@@ -136,7 +136,7 @@ async def delete_task(task_id: int, db: AsyncSession = Depends(get_db)):
 
 
 # PATCH /tasks/{task_id} update a task title, description, or both (title cannot be empty)
-@router.patch("/{taske_id}", dependencies=[Depends(get_current_user)])
+@router.patch("/{task_id}", dependencies=[Depends(get_current_user)])
 async def partial_update_task(task_id: int, task_data: TaskUpdate, db: AsyncSession = Depends(get_db)):
     try:
         task = await db.get(Task, task_id)

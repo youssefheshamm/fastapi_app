@@ -45,6 +45,8 @@ jobs:
           if [ -z "$(git tag --list)" ]; then
             git tag v0.0.0
             git push origin v0.0.0
+          else
+            echo "Initial tag already exists, skipping"
           fi
 
       # Run semantic release to determine next version

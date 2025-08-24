@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.0.2 (2025-08-24)
+
+### Bug Fixes
+
+- Semantic-release + GHCR workflow with proper versioning and full history
+  ([`9806e53`](https://github.com/youssefheshamm/FastApi_APP/commit/9806e53dc63a067e1d0625dc14e882f11fa48a38))
+
+
 ## v1.0.1 (2025-08-24)
 
 

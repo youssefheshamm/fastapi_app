@@ -13,7 +13,8 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # Make the token globally available
+  GITHUB_TOKEN: ${{ secrets.TOKEN }}
+
 
 jobs:
   release-and-docker:

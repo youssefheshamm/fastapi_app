@@ -1,5 +1,4 @@
 name: Release & Build Docker Image to GHCR
-#123123
 
 on:
   push:
@@ -14,6 +13,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # Make the token globally available
 
 jobs:
   release-and-docker:
@@ -23,7 +23,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch full history for semantic-release
+          fetch-depth: 0  # Full history for semantic-release
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -43,23 +43,13 @@ jobs:
             echo "Initial tag exists, skipping"
           fi
 
-      - name: Debug Token
-        run: |
-          echo $GITHUB_TOKEN
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Semantic Release
         id: semantic_release
         run: semantic-release publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Save release version and image name
         run: |
           VERSION=$(semantic-release version | tr -d '[:space:]')
-          echo $VERSION
           IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY,,}"
           echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
@@ -72,7 +62,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ env.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6

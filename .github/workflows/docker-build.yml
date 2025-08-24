@@ -45,12 +45,12 @@ jobs:
       - name: Semantic Release
         id: semantic_release
         run: |
-          export GITHUB_TOKEN=${{ secrets.TOKEN }}
+          export GITHUB_TOKEN="${{ secrets.TOKEN }}"
           semantic-release publish
 
       - name: Save release version and image name
         run: |
-          export GITHUB_TOKEN=${{ secrets.TOKEN }}
+          export GITHUB_TOKEN="${{ secrets.TOKEN }}"
           VERSION=$(semantic-release version | tr -d '[:space:]')
           IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY,,}"
           echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV

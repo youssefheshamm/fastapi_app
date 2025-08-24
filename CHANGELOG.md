@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.0.7 (2025-08-24)
+
+### Bug Fixes
+
+- Fix semantic release
+  ([`521e67f`](https://github.com/youssefheshamm/FastApi_APP/commit/521e67fee4587f17f54c5b644b9132c294d0b372))
+
+
 ## v1.0.6 (2025-08-24)
 
 ### Bug Fixes

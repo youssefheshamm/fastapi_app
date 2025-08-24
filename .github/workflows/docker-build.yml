@@ -41,12 +41,18 @@ jobs:
           else
             echo "Initial tag exists, skipping"
           fi
+          
+      - name: Debug Token
+        run: 'echo "Token length: ${#GITHUB_TOKEN}"'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Semantic Release
         id: semantic_release
         run: semantic-release publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Save release version and image name
         run: |

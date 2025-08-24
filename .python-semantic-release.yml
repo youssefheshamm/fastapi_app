@@ -1,0 +1,4 @@
+version_variable: "app/__init__.py:__version__"
+upload_to_github: yes
+github:
+  token: $GITHUB_TOKEN

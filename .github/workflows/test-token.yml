@@ -15,12 +15,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          # full history + all tags so semantic-release can pick up prior versions
           fetch-depth: 0
 
-      - name: Ensure tags & history
+      - name: Ensure full history & tags
         run: |
-          # if repo was shallow-cloned, unshallow it; always fetch tags
           git fetch --prune --unshallow || true
           git fetch --tags
 
@@ -38,25 +36,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.TOKEN }}
         run: |
-          # 
-          # --initial-version ensures that on your very first release
-          # it will start from 0.1.0 (you can bump this)
-          #
-          # --version-template must match how you want your tags named.
-          # Default is "v{version}". If you prefer no 'v', change to "{version}".
-          #
           semantic-release publish \
-            --yes \
             --initial-version 0.1.0 \
             --version-template "v{version}"
 
       - name: Extract released version
         id: version
         run: |
-          # grabs the last tag, strips the leading "v"
           NEW_TAG=$(git describe --tags --match "v*" --abbrev=0)
-          VERSION=${NEW_TAG#v}
-          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "VERSION=${NEW_TAG#v}" >> $GITHUB_OUTPUT
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2

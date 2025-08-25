@@ -20,7 +20,31 @@ dependencies = [
     "psycopg2-binary (>=2.9.10,<3.0.0)"
 ]
 
-
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+# Add this section for semantic release
+[tool.semantic_release]
+version_variable = [
+    "pyproject.toml:version"
+]
+version_source = "tag"
+commit_version_number = true
+upload_to_repository = true
+upload_to_release = true
+build_command = "poetry build"
+dist_path = "dist/"
+
+[tool.semantic_release.branch]
+main = [
+    {name = "major", min_version = "1.0.0"},
+    {name = "minor", min_version = "0.1.0"},
+    {name = "patch", min_version = "0.0.1"}
+]
+
+# Optional: Add this if you want to use commitizen-style commits
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+tag_format = "v$version"

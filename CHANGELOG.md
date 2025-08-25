@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.2.0 (2025-08-25)
+
+### Features
+
+- Added semantic release
+  ([`5d7bfe3`](https://github.com/youssefheshamm/fastapi_app/commit/5d7bfe33d67932d203c65e1333351814d33dc545))
+
+
 ## v1.1.0 (2025-08-24)
 
 ### Bug Fixes

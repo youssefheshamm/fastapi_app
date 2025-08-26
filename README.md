@@ -322,3 +322,6 @@ See the [LICENSE](LICENSE) file for details.
 - Added semantic release automation
 - Added Docker build pipeline
  
+## Version 0.2.0 Features
+- Automated semantic versioning
+- Docker image building

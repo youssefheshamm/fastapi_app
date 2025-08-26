@@ -1,124 +1,67 @@
-name: Semantic Release
+name: Release & Build Docker Image
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write      # push tags + create releases
+  packages: write      # push Docker images to GHCR
 
 jobs:
-  check-and-release:
-    name: Check and Release
+  release:
     runs-on: ubuntu-latest
-    
-    outputs:
-      build_docker: ${{ steps.set_output.outputs.build_docker }}
-      version_tag: ${{ steps.set_output.outputs.version_tag }}
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          token: ${{ secrets.TOKEN }}
+          fetch-depth: 0   # fetch full history for semantic-release
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
+          node-version: 20
 
-      - name: Install GitHub CLI
+      - name: Install dependencies for semantic-release
         run: |
-          type -p curl >/dev/null || sudo apt update && sudo apt install curl -y
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-          sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          sudo apt update
-          sudo apt install gh -y
+          npm install -g semantic-release \
+            @semantic-release/github \
+            @semantic-release/git \
+            @semantic-release/commit-analyzer \
+            @semantic-release/release-notes-generator
 
-      - name: Install Python Semantic Release
-        run: pip install python-semantic-release
-
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Try semantic release
-        id: semantic_release
-        continue-on-error: true
+      - name: Run semantic-release
+        id: semantic
         env:
-          GH_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}   # ✅ use your TOKEN
         run: |
-          output=$(semantic-release publish 2>&1)
-          echo "$output"
-          if echo "$output" | grep -q "Published Release"; then
-            echo "BUILD_DOCKER=true" >> $GITHUB_ENV
-          else
-            echo "BUILD_DOCKER=false" >> $GITHUB_ENV
-          fi
-
-      - name: Manual release for feat/fix commits
-        if: env.BUILD_DOCKER == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.TOKEN }}
+          npx semantic-release --ci
+          
+      - name: Get release version
+        id: get_version
         run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          if echo "$COMMIT_MSG" | grep -qE '^(feat|fix|feat\!):'; then
-            CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.1.0")
-            VERSION=$(echo $CURRENT_TAG | sed 's/v//')
-            MAJOR=$(echo $VERSION | cut -d'.' -f1)
-            MINOR=$(echo $VERSION | cut -d'.' -f2)
-            PATCH=$(echo $VERSION | cut -d'.' -f3)
-            
-            # USE SINGLE QUOTES for regex pattern
-            if echo "$COMMIT_MSG" | grep -qE '^feat\!:'; then
-              NEW_VERSION="v$((MAJOR + 1)).0.0"
-            elif echo "$COMMIT_MSG" | grep -q '^feat:'; then
-              NEW_VERSION="v$MAJOR.$((MINOR + 1)).0"
-            else
-              NEW_VERSION="v$MAJOR.$MINOR.$((PATCH + 1))"
-            fi
-            
-            git tag $NEW_VERSION
-            git push origin $NEW_VERSION
-            gh release create $NEW_VERSION --title "$NEW_VERSION" --notes "$COMMIT_MSG" --target main
-            
-            echo "BUILD_DOCKER=true" >> $GITHUB_ENV
-            echo "VERSION_TAG=$NEW_VERSION" >> $GITHUB_ENV
-          fi
-
-      - name: Set output variables
-        id: set_output
-        run: |
-          echo "build_docker=${BUILD_DOCKER:-false}" >> $GITHUB_OUTPUT
-          echo "version_tag=${VERSION_TAG:-none}" >> $GITHUB_OUTPUT
-
-  build-docker:
-    name: Build Docker Image
-    runs-on: ubuntu-latest
-    needs: check-and-release
-    if: needs.check-and-release.outputs.build_docker == 'true'
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-tags: true
+          VERSION=$(git describe --tags --abbrev=0)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GitHub Container Registry
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.TOKEN }}
+          password: ${{ secrets.TOKEN }}   # ✅ use your TOKEN
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ needs.check-and-release.outputs.version_tag }}
+            ghcr.io/${{ github.repository }}:${{ steps.get_version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -321,3 +321,4 @@ See the [LICENSE](LICENSE) file for details.
 ## New Features
 - Added semantic release automation
 - Added Docker build pipeline
+ 

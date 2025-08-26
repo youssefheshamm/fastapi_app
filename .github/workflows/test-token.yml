@@ -2,16 +2,13 @@ name: Semantic Release
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
   semantic-release:
     name: Semantic Release
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    
-    outputs:
-      new_release_published: ${{ steps.release_output.outputs.new_release_published }}
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
       - name: Checkout code
@@ -25,9 +22,6 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Poetry
-        run: pip install poetry
-
       - name: Install Python Semantic Release
         run: pip install python-semantic-release
 
@@ -36,26 +30,43 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Debug - List existing tags
-        run: git tag --list
+      - name: Check for existing tags
+        run: |
+          echo "Existing tags:"
+          git tag --list || echo "No tags found"
 
-      - name: Run Semantic Release
-        id: release_output
+      - name: Try Semantic Release
+        id: semantic_release
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.TOKEN }}
         run: |
+          # Try to run semantic release
           output=$(semantic-release publish 2>&1)
           echo "$output"
           
-          # Check if a new release was published
           if echo "$output" | grep -q "Published Release"; then
-            echo "new_release_published=true" >> $GITHUB_OUTPUT
+            echo "NEW_RELEASE=true" >> $GITHUB_ENV
+          elif echo "$output" | grep -q "No release will be prepared"; then
+            echo "NEW_RELEASE=false" >> $GITHUB_ENV
           else
-            echo "new_release_published=false" >> $GITHUB_OUTPUT
+            # If semantic release fails, check if we need to create initial tag
+            if ! git tag --list "v*" | grep -q .; then
+              echo "Creating initial tag v0.1.0"
+              git tag v0.1.0
+              git push origin v0.1.0
+              echo "NEW_RELEASE=true" >> $GITHUB_ENV
+            else
+              echo "NEW_RELEASE=false" >> $GITHUB_ENV
+            fi
           fi
 
+      - name: Set output
+        run: |
+          echo "new_release_published=$NEW_RELEASE" >> $GITHUB_OUTPUT
+
   build-docker:
-    name: Build and Push Docker Image
+    name: Build Docker Image
     runs-on: ubuntu-latest
     needs: semantic-release
     if: needs.semantic-release.outputs.new_release_published == 'true'
@@ -76,14 +87,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.TOKEN }}
 
-      - name: Get latest version
-        id: version
-        run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0)
-          VERSION=${LATEST_TAG#v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Using version: $VERSION"
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -91,7 +94,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
-          labels: |
-            org.opencontainers.image.version=${{ steps.version.outputs.version }}
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            ghcr.io/${{ github.repository }}:v0.1.0

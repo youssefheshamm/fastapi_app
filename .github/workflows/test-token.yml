@@ -56,7 +56,7 @@ jobs:
             echo "BUILD_DOCKER=false" >> $GITHUB_ENV
           fi
 
-     - name: Manual release for feat/fix commits
+      - name: Manual release for feat/fix commits
         if: env.BUILD_DOCKER == 'false'
         env:
           GH_TOKEN: ${{ secrets.TOKEN }}

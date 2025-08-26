@@ -35,6 +35,7 @@ upload_to_repository = true
 upload_to_release = true
 build_command = "poetry build"
 dist_path = "dist/"
+tag_format = "v{version}"
 
 [tool.semantic_release.branch]
 main = [

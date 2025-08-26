@@ -3,8 +3,6 @@ name: Semantic Release
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
 
 jobs:
   semantic-release:
@@ -35,7 +33,24 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Check if initial release is needed
+        id: check_initial
+        run: |
+          if ! git tag --list "v*" | grep -q .; then
+            echo "initial_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "initial_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create initial tag if needed
+        if: steps.check_initial.outputs.initial_release == 'true'
+        run: |
+          git tag v0.1.0
+          git push origin v0.1.0
+          echo "Created initial tag v0.1.0"
+
       - name: Run Semantic Release
+        if: steps.check_initial.outputs.initial_release == 'false'
         env:
           GH_TOKEN: ${{ secrets.TOKEN }}
         run: semantic-release publish

@@ -325,3 +325,4 @@ See the [LICENSE](LICENSE) file for details.
 ## Version 0.2.0 Features
 - Automated semantic versioning
 - Docker image building
+## Version 1.0.0 - Stable Release

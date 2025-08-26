@@ -9,6 +9,10 @@ jobs:
     name: Check and Release
     runs-on: ubuntu-latest
     
+    outputs:
+      should_build_docker: ${{ steps.final_output.outputs.should_build_docker }}
+      docker_version: ${{ steps.final_output.outputs.docker_version }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,73 +39,81 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.TOKEN }}
         run: |
-          # Try to run semantic release normally
           output=$(semantic-release publish 2>&1)
           echo "$output"
           
           if echo "$output" | grep -q "Published Release"; then
-            echo "RELEASE_TYPE=semantic" >> $GITHUB_ENV
-            echo "NEW_RELEASE=true" >> $GITHUB_ENV
+            echo "SHOULD_BUILD=true" >> $GITHUB_ENV
           else
-            echo "RELEASE_TYPE=none" >> $GITHUB_ENV
-            echo "NEW_RELEASE=false" >> $GITHUB_ENV
+            echo "SHOULD_BUILD=false" >> $GITHUB_ENV
           fi
 
-      - name: Create manual release if semantic failed
-        if: env.RELEASE_TYPE == 'none'
+      - name: Check commit and create release if needed
+        if: env.SHOULD_BUILD == 'false'
         env:
           GH_TOKEN: ${{ secrets.TOKEN }}
         run: |
-          # Get latest commit message to check if it should trigger a release
           COMMIT_MSG=$(git log -1 --pretty=%B)
           echo "Last commit: $COMMIT_MSG"
           
           if echo "$COMMIT_MSG" | grep -qE "^(feat|fix|feat!):"; then
-            echo "Commit should trigger release, creating manual release..."
+            echo "Creating manual release..."
             
-            # Get current version and increment
             CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
             echo "Current version: $CURRENT_VERSION"
             
-            # Simple version bump logic
+            # Simple version bump
             if echo "$COMMIT_MSG" | grep -q "^feat!:"; then
-              NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1+1 ".0.0"}')
+              NEW_VERSION="v1.0.0"
             elif echo "$COMMIT_MSG" | grep -q "^feat:"; then
-              NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{$2=$2+1; $3=0; print $1 "." $2 "." $3}')
+              MAJOR=$(echo $CURRENT_VERSION | cut -d'v' -f2 | cut -d'.' -f1)
+              MINOR=$(echo $CURRENT_VERSION | cut -d'.' -f2)
+              NEW_MINOR=$((MINOR + 1))
+              NEW_VERSION="v$MAJOR.$NEW_MINOR.0"
             else
-              NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{$3=$3+1; print $1 "." $2 "." $3}')
+              MAJOR=$(echo $CURRENT_VERSION | cut -d'v' -f2 | cut -d'.' -f1)
+              MINOR=$(echo $CURRENT_VERSION | cut -d'.' -f2)
+              PATCH=$(echo $CURRENT_VERSION | cut -d'.' -f3)
+              NEW_PATCH=$((PATCH + 1))
+              NEW_VERSION="v$MAJOR.$MINOR.$NEW_PATCH"
             fi
             
             echo "New version: $NEW_VERSION"
             
-            # Create and push tag
             git tag $NEW_VERSION
             git push origin $NEW_VERSION
             
-            echo "RELEASE_TYPE=manual" >> $GITHUB_ENV
-            echo "NEW_RELEASE=true" >> $GITHUB_ENV
-            echo "RELEASE_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+            echo "SHOULD_BUILD=true" >> $GITHUB_ENV
+            echo "DOCKER_VERSION=$NEW_VERSION" >> $GITHUB_ENV
           else
-            echo "Commit does not require release"
-            echo "NEW_RELEASE=false" >> $GITHUB_ENV
+            echo "No release needed for this commit"
+            echo "SHOULD_BUILD=false" >> $GITHUB_ENV
           fi
 
-      - name: Set output
+      - name: Set final output
+        id: final_output
         run: |
-          echo "new_release_published=$NEW_RELEASE" >> $GITHUB_OUTPUT
-          echo "release_version=${RELEASE_VERSION:-v0.0.0}" >> $GITHUB_OUTPUT
+          echo "should_build_docker=$SHOULD_BUILD" >> $GITHUB_OUTPUT
+          echo "docker_version=${DOCKER_VERSION:-none}" >> $GITHUB_OUTPUT
+          echo "DEBUG: should_build_docker=$SHOULD_BUILD"
+          echo "DEBUG: docker_version=${DOCKER_VERSION:-none}"
 
   build-docker:
     name: Build Docker Image
     runs-on: ubuntu-latest
     needs: check-and-release
-    if: needs.check-and-release.outputs.new_release_published == 'true'
+    if: needs.check-and-release.outputs.should_build_docker == 'true'
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-tags: true
+
+      - name: Debug outputs
+        run: |
+          echo "Should build: ${{ needs.check-and-release.outputs.should_build_docker }}"
+          echo "Docker version: ${{ needs.check-and-release.outputs.docker_version }}"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -113,6 +125,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.TOKEN }}
 
+      - name: Determine version tag
+        id: version_tag
+        run: |
+          if [ "${{ needs.check-and-release.outputs.docker_version }}" != "none" ]; then
+            echo "tag=${{ needs.check-and-release.outputs.docker_version }}" >> $GITHUB_OUTPUT
+          else
+            LATEST_TAG=$(git describe --tags --abbrev=0)
+            echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          fi
+          echo "Using tag: $tag"
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -120,4 +143,4 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ needs.check-and-release.outputs.release_version }}
+            ghcr.io/${{ github.repository }}:${{ steps.version_tag.outputs.tag }}

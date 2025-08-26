@@ -1,6 +1,6 @@
 # FastAPI Mini Project 🚀
 
-This is a simple FastAPI-based backend project that includes multiple endpoints. The application supports arithmetic operations, palindrome checking, and task management using database.
+This is a simple FastAPI-based backend project that includes multiple endpoints. The application supports arithmetic operations, palindrome checking, and task management using database. updated now with semantic release
 
 ---
 

@@ -1,81 +1,35 @@
-name: Semantic Release
+name: Simple Release and Docker Build
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  semantic-release:
-    name: Semantic Release
+  create-release:
+    name: Create Release
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           token: ${{ secrets.TOKEN }}
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install Python Semantic Release
-        run: pip install python-semantic-release
-
-      - name: Configure Git
+      - name: Create initial tag
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Check for existing tags
-        run: |
-          echo "Existing tags:"
-          git tag --list || echo "No tags found"
-
-      - name: Try Semantic Release
-        id: semantic_release
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.TOKEN }}
-        run: |
-          # Try to run semantic release
-          output=$(semantic-release publish 2>&1)
-          echo "$output"
-          
-          if echo "$output" | grep -q "Published Release"; then
-            echo "NEW_RELEASE=true" >> $GITHUB_ENV
-          elif echo "$output" | grep -q "No release will be prepared"; then
-            echo "NEW_RELEASE=false" >> $GITHUB_ENV
-          else
-            # If semantic release fails, check if we need to create initial tag
-            if ! git tag --list "v*" | grep -q .; then
-              echo "Creating initial tag v0.1.0"
-              git tag v0.1.0
-              git push origin v0.1.0
-              echo "NEW_RELEASE=true" >> $GITHUB_ENV
-            else
-              echo "NEW_RELEASE=false" >> $GITHUB_ENV
-            fi
-          fi
-
-      - name: Set output
-        run: |
-          echo "new_release_published=$NEW_RELEASE" >> $GITHUB_OUTPUT
+          git tag v0.1.0
+          git push origin v0.1.0
+          echo "RELEASE_CREATED=true" >> $GITHUB_ENV
 
   build-docker:
     name: Build Docker Image
     runs-on: ubuntu-latest
-    needs: semantic-release
-    if: needs.semantic-release.outputs.new_release_published == 'true'
+    needs: create-release
+    if: always()
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-tags: true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

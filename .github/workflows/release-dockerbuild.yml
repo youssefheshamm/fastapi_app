@@ -35,7 +35,7 @@ jobs:
       - name: Run semantic-release
         id: semantic
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}   # ✅ use your TOKEN
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
         run: |
           npx semantic-release --ci
           
@@ -53,7 +53,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.TOKEN }}   # ✅ use your TOKEN
+          password: ${{ secrets.TOKEN }}   
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
